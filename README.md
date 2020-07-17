@@ -72,3 +72,9 @@ The original data was retrived from the FireProt database.
 
 Give proper reference to FireProt!
 Describe data preparation
+
+## docker
+test reproducibility with Docker
+docker build -t prenda_image <path>
+docker run -it -rm -p "8050:8050" -name prenda_container prenda_image
+
