@@ -1,0 +1,9 @@
+{
+    "name": "4WOR_A_merge",
+    "column_definitions": {
+        "variant": "variant",
+        "parent": "parent",
+        "mutation": "mutation",
+        "attribute": "ddG"
+    }
+}
