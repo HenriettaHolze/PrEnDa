@@ -42,35 +42,61 @@ from variant_data import (
 #              local app for exploration of protein engineering data
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-# start dashboard with DATA_PATH="example_data/gssm" python dashboard_local.py
-
 ###########################
 # Data Manipulation / Model
 ###########################
 
-# access environment variable, set default
-DATA_PATH = os.getenv('DATA_PATH', os.path.join(os.path.dirname(os.path.realpath(__file__)), "example_data/directed"))
-# print("path to data is", DATA_PATH)
+'''
+The dashboard will first look for a 'data' directory. If it is present, it will check if the required files are in this directory. 
+If the 'data' directory does not exist, it will check if the environment variable DATA_PATH is set. 
+If so, it will check if the directory and the files exist and else use the data in example_data/directed
+'''
 
-# check if data path exists
-if not os.path.isdir(DATA_PATH):
-    sys.stderr.write("Error: data path does not exist\n")
-    sys.exit(1)
+FILE_PATH = os.path.dirname(os.path.realpath(__file__))
 
-CSV_FILE = os.path.join(DATA_PATH, "data.csv")
-FASTA_FILE = os.path.join(DATA_PATH, "protein.fasta")
-PDB_FILE = os.path.join(DATA_PATH, 'protein.pdb')
-SETTINGS_FILE = os.path.join(DATA_PATH, 'settings.json')
-HHBLITS_FASTA_FILE = os.path.join(DATA_PATH, "msa.fasta")
-# HHBLITS_A3M_FILE = os.path.join(DATA_PATH, "4WOR_A_HHblits.a3m")
+if os.path.isdir(os.path.join(FILE_PATH, "data")):
+    DATA_PATH = os.path.join(FILE_PATH, "data")
+    print('using provided data in', DATA_PATH)
 
-# check if all files are readible
-for file_type in [CSV_FILE, FASTA_FILE, PDB_FILE, SETTINGS_FILE, HHBLITS_FASTA_FILE]:
-    try:
-        o = open(file_type,"r")
-    except:
-        sys.stderr.write("Error: Cannot open file: {}\n".format(file_type))
+    CSV_FILE = os.path.join(DATA_PATH, "data.csv")
+    FASTA_FILE = os.path.join(DATA_PATH, "protein.fasta")
+    PDB_FILE = os.path.join(DATA_PATH, 'protein.pdb')
+    SETTINGS_FILE = os.path.join(DATA_PATH, 'settings.json')
+    HHBLITS_FASTA_FILE = os.path.join(DATA_PATH, "msa.fasta")
+    # HHBLITS_A3M_FILE = os.path.join(DATA_PATH, "4WOR_A_HHblits.a3m")
+
+    # check if all files are readible
+    for file_type in [CSV_FILE, FASTA_FILE, PDB_FILE, SETTINGS_FILE, HHBLITS_FASTA_FILE]:
+        try:
+            o = open(file_type,"r")
+        except:
+            sys.stderr.write("Error: Cannot open file: {}\n".format(file_type))
+            sys.exit(1)
+
+else: 
+    # access environment variable, set default
+    DATA_PATH = os.getenv('DATA_PATH', os.path.join(FILE_PATH, "example_data/directed"))
+    print('using data in', DATA_PATH)
+
+    # check if data path exists
+    if not os.path.isdir(DATA_PATH):
+        sys.stderr.write("Error: data path does not exist\n")
         sys.exit(1)
+
+    CSV_FILE = os.path.join(DATA_PATH, "data.csv")
+    FASTA_FILE = os.path.join(DATA_PATH, "protein.fasta")
+    PDB_FILE = os.path.join(DATA_PATH, 'protein.pdb')
+    SETTINGS_FILE = os.path.join(DATA_PATH, 'settings.json')
+    HHBLITS_FASTA_FILE = os.path.join(DATA_PATH, "msa.fasta")
+    # HHBLITS_A3M_FILE = os.path.join(DATA_PATH, "4WOR_A_HHblits.a3m")
+
+    # check if all files are readible
+    for file_type in [CSV_FILE, FASTA_FILE, PDB_FILE, SETTINGS_FILE, HHBLITS_FASTA_FILE]:
+        try:
+            o = open(file_type,"r")
+        except:
+            sys.stderr.write("Error: Cannot open file: {}\n".format(file_type))
+            sys.exit(1)
 
 # load settings
 SETTINGS = json.load(open(SETTINGS_FILE, "r"))
@@ -160,9 +186,10 @@ conservation_df = pd.DataFrame({'site': list(range(1, seq_length + 1)), 'conserv
 
 
 def calculate_homology_logo():
+    print('calculating homology logo')
     with tempfile.NamedTemporaryFile() as temp_file:
         homology_seqs = ','.join([''.join(row.tolist()) for i, row in seq_df.iterrows()])
-        subprocess.call(["./ggseqlogo.R", temp_file.name, homology_seqs])
+        subprocess.call([os.path.join(FILE_PATH, "ggseqlogo.R"), temp_file.name, homology_seqs])
         data = base64.b64encode(open(temp_file.name, "rb").read())
         data_url_ggseqlogo_homology = "data:image/png;base64,{}".format(quote(data))
         return data_url_ggseqlogo_homology
@@ -1495,7 +1522,7 @@ def plot_r_script(filtered_data, hit_data):
     # Not hit set vs. hit set 
     with tempfile.NamedTemporaryFile() as temp_file:
         # calls R wrapper for DiffLogo that accepts 3 command line arguments, saves png in temp file
-        subprocess.call(["./DiffLogo.R", temp_file.name, not_hit_seqs, hit_seqs])
+        subprocess.call([os.path.join(FILE_PATH, "DiffLogo.R"), temp_file.name, not_hit_seqs, hit_seqs])
 
         # convert image to string and pack in URI
         data = base64.b64encode(open(temp_file.name, "rb").read())
@@ -1511,4 +1538,4 @@ def plot_r_script(filtered_data, hit_data):
 
 
 if __name__ == "__main__":
-    app.run_server(host='127.0.0.1', port=8050, debug=True)
+    app.run_server(host='0.0.0.0', port=8050) #, debug=True)
