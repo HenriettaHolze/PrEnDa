@@ -83,7 +83,4 @@ In order to run the dashboard with your own data, you have to either set the env
 ## Data
 
 2 example datasets are provided: one from a gene site saturation mutagenesis (GSSM) experiment and one simulating a directed protein engineering approach (directed).
-The original data was retrived from the FireProt database. 
-
-Give proper reference to FireProt!
-Describe data preparation
+The original data was retrived from the [FireProt](https://loschmidt.chemi.muni.cz/fireprotdb/) database. Data for protein [4WOR](https://www.rcsb.org/structure/4WOR) was used for the GSSM data and for simulating the directed engineering data. 
